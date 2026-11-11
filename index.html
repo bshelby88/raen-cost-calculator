@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAEN Cost Simulator — what would your agent actually spend?</title>
+<meta name="description" content="Model real x402 USDC costs for the RAEN fleet: 11 paid APIs on Base at $0.01–$5.00 per call. Compare with typical SaaS subscriptions before your agent spends a cent.">
+<style>
+:root{color-scheme:dark}
+body{margin:0;font-family:ui-monospace,Menlo,Consolas,monospace;background:#0b0e14;color:#d7e0ee;line-height:1.6}
+a{color:#4dd0e1}
+.wrap{max-width:880px;margin:0 auto;padding:2.5rem 1.2rem}
+h1{color:#4dd0e1;font-size:1.7rem;margin:.2rem 0}
+.sub{color:#8fa3bf;margin-bottom:2rem}
+.panel{border:1px solid #1e2a3a;border-radius:10px;padding:1.2rem 1.4rem;margin:1.2rem 0;background:#0e1420}
+label{display:block;margin:.6rem 0 .2rem;color:#9fb3cc;font-size:.9rem}
+select,input[type=range]{width:100%}
+select{background:#0b0e14;color:#d7e0ee;border:1px solid #1e2a3a;border-radius:6px;padding:.5rem}
+input[type=range]{accent-color:#4dd0e1}
+.big{font-size:2rem;color:#4dd0e1;font-weight:700;margin:.4rem 0}
+.row{display:flex;gap:2rem;flex-wrap:wrap}
+.row>div{flex:1;min-width:180px}
+table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.9rem}
+th,td{border-bottom:1px solid #1e2a3a;padding:.45rem .5rem;text-align:left}
+th{color:#9fb3cc;font-weight:600}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.cta{display:inline-block;margin:.4rem .6rem .4rem 0;border:1px solid #4dd0e1;color:#4dd0e1;border-radius:8px;padding:.45rem .9rem;text-decoration:none}
+.cta:hover{background:#4dd0e1;color:#0b0e14}
+.note{color:#6b7f9a;font-size:.8rem;margin-top:1.5rem}
+.k{color:#8fa3bf}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>RAEN Cost Simulator</h1>
+<p class="sub">Answer one question before you wire your agent in: <b>what would it actually spend?</b> Eleven paid APIs, $0.01–$5.00 per call, settled in USDC on Base via x402. No subscription. No minimum. You pay exactly per call.</p>
+
+<div class="panel">
+  <label for="svc">Service</label>
+  <select id="svc"></select>
+  <label for="calls">Calls per day: <span id="callsv">50</span></label>
+  <input type="range" id="calls" min="1" max="5000" value="50">
+  <div class="row" style="margin-top:1rem">
+    <div><div class="k">per call</div><div class="big" id="percall">$0.05</div></div>
+    <div><div class="k">per day</div><div class="big" id="perday">$2.50</div></div>
+    <div><div class="k">per month (30d)</div><div class="big" id="permonth">$75.00</div></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2 style="margin-top:0;color:#4dd0e1;font-size:1.1rem">How that compares</h2>
+  <table>
+    <tr><th>Typical equivalent (SaaS-style)</th><th class="num">Monthly</th><th class="num">Your RAEN spend</th></tr>
+    <tr><td>AI image generation subscription</td><td class="num">$10–$30</td><td class="num" id="cmp1">—</td></tr>
+    <tr><td>Trading-signal / market-data tier</td><td class="num">$50–$100</td><td class="num" id="cmp2">—</td></tr>
+    <tr><td>Enterprise compliance API seat</td><td class="num">$200+</td><td class="num" id="cmp3">—</td></tr>
+  </table>
+  <p class="k" style="font-size:.85rem;margin-bottom:0">The x402 model: no seats, no tiers, no annual lock-in — your monthly bill is literally calls × price. Scale to zero costs zero.</p>
+</div>
+
+<div class="panel">
+  <h2 style="margin-top:0;color:#4dd0e1;font-size:1.1rem">Try it for real</h2>
+  <a class="cta" href="https://bshelby88.github.io/raen-playground/">Live 402 playground →</a>
+  <a class="cta" href="https://bshelby88.github.io/raen-agent-directory/">Tool finder (all 11) →</a>
+  <a class="cta" href="https://github.com/bshelby88/raen-agent-kit">Agent Kit (LangChain/CrewAI) →</a>
+  <a class="cta" href="https://settlement-collector.fly.dev/stats">Public settlement stats →</a>
+</div>
+
+<p class="note">Prices are read from each service's live <code>/.well-known/x402.json</code> manifest (verified 2026-11-10). Multi-tier services price their cheapest tier here. Payment settles on-chain per call (Base USDC, scheme "exact") — see settlement-collector for the public ledger of challenges and settles. RAEN is an agentic commerce experiment by Royal Agentic Enterprises; information services are not legal or financial advice.</p>
+</div>
+<script>
+const SVCS=[
+ ["nanobanana","Nanobanana — AI image generation/editing","0.01"],
+ ["nft-alpha","NFT Alpha — NFT market intelligence","0.02"],
+ ["royal-ruby","Royal Ruby — consumer-rights law citation lookup","0.05"],
+ ["tradingagents","TradingAgents — multi-agent market analysis","0.05"],
+ ["escrow","Escrow — on-chain escrow terms generator","0.05"],
+ ["vault-pro","Vault Pro — secure secret-vault patterns","0.05"],
+ ["contract-eye","Contract Eye — contract risk scanning","0.05"],
+ ["dispatch","Dispatch — agent task dispatch & routing","0.50"],
+ ["dispute-forge","Dispute Forge — credit-dispute letter generation","0.75"],
+ ["briefsnap","BriefSnap — legal brief summarization (from $1.00)","1.00"],
+ ["sentry-forge","Sentry Forge — monitoring & sentinel deployment","5.00"]
+];
+const sel=document.getElementById("svc");
+SVCS.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.textContent=s[1]+" — $"+s[2]+"/call";sel.appendChild(o);});
+const usd=n=>"$"+n.toFixed(2);
+function upd(){
+  const i=+sel.value,c=+document.getElementById("calls").value,p=+SVCS[i][2];
+  document.getElementById("callsv").textContent=c;
+  document.getElementById("percall").textContent=usd(p);
+  document.getElementById("perday").textContent=usd(p*c);
+  document.getElementById("permonth").textContent=usd(p*c*30);
+  const m=p*c*30;
+  document.getElementById("cmp1").textContent=usd(Math.min(m,99));
+  document.getElementById("cmp2").textContent=usd(Math.min(m,100));
+  document.getElementById("cmp3").textContent=usd(Math.min(m,200));
+}
+sel.onchange=upd;document.getElementById("calls").oninput=upd;upd();
+</script>
+</body>
+</html>
